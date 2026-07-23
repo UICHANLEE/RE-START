@@ -131,7 +131,7 @@ function LikertChart({ question }: { question: ScaleQuestion }) {
       </div>
       <div
         className="likert-plot"
-        aria-label={`매우 불만족 ${veryNegative.toFixed(0)}%, 조금 불만족 ${negative.toFixed(0)}%, 보통 ${neutral.toFixed(0)}%, 조금 만족 ${positive.toFixed(0)}%, 매우 만족 ${veryPositive.toFixed(0)}%`}
+        aria-label={`전혀 그렇지 않다 ${veryNegative.toFixed(0)}%, 그렇지 않다 ${negative.toFixed(0)}%, 보통이다 ${neutral.toFixed(0)}%, 그렇다 ${positive.toFixed(0)}%, 매우 그렇다 ${veryPositive.toFixed(0)}%`}
       >
         <span
           className="likert-segment likert-very-negative"
@@ -139,9 +139,9 @@ function LikertChart({ question }: { question: ScaleQuestion }) {
             right: `${50 + neutralHalf + segmentWidth(negative)}%`,
             width: `${segmentWidth(veryNegative)}%`,
           }}
-          title={`매우 불만족 ${veryNegative.toFixed(0)}%`}
+          title={`전혀 그렇지 않다 ${veryNegative.toFixed(0)}%`}
         >
-          {label(veryNegative, "매우 불만족")}
+          {label(veryNegative, "전혀 그렇지 않다")}
         </span>
         <span
           className="likert-segment likert-some-negative"
@@ -149,9 +149,9 @@ function LikertChart({ question }: { question: ScaleQuestion }) {
             right: `${50 + neutralHalf}%`,
             width: `${segmentWidth(negative)}%`,
           }}
-          title={`조금 불만족 ${negative.toFixed(0)}%`}
+          title={`그렇지 않다 ${negative.toFixed(0)}%`}
         >
-          {label(negative, "조금 불만족")}
+          {label(negative, "그렇지 않다")}
         </span>
         <span
           className="likert-segment likert-neutral"
@@ -159,9 +159,9 @@ function LikertChart({ question }: { question: ScaleQuestion }) {
             left: `${50 - neutralHalf}%`,
             width: `${Math.max(neutral / 2, 1)}%`,
           }}
-          title={`보통 ${neutral.toFixed(0)}%`}
+          title={`보통이다 ${neutral.toFixed(0)}%`}
         >
-          {label(neutral, "보통")}
+          {label(neutral, "보통이다")}
         </span>
         <span
           className="likert-segment likert-some-positive"
@@ -169,9 +169,9 @@ function LikertChart({ question }: { question: ScaleQuestion }) {
             left: `${50 + neutralHalf}%`,
             width: `${segmentWidth(positive)}%`,
           }}
-          title={`조금 만족 ${positive.toFixed(0)}%`}
+          title={`그렇다 ${positive.toFixed(0)}%`}
         >
-          {label(positive, "조금 만족")}
+          {label(positive, "그렇다")}
         </span>
         <span
           className="likert-segment likert-very-positive"
@@ -179,9 +179,9 @@ function LikertChart({ question }: { question: ScaleQuestion }) {
             left: `${50 + neutralHalf + segmentWidth(positive)}%`,
             width: `${segmentWidth(veryPositive)}%`,
           }}
-          title={`매우 만족 ${veryPositive.toFixed(0)}%`}
+          title={`매우 그렇다 ${veryPositive.toFixed(0)}%`}
         >
-          {label(veryPositive, "매우 만족")}
+          {label(veryPositive, "매우 그렇다")}
         </span>
         <span className="sr-only">
           부정 합계 {negativeTotal.toFixed(0)}%, 긍정 합계 {positiveTotal.toFixed(0)}%
@@ -414,7 +414,7 @@ export default function ReportPage() {
           <article className="report-panel scale-panel">
             <div className="report-panel-heading">
               <div><span>5점 척도</span><h2>긍정·부정 응답 분포</h2></div>
-              <small>보통 응답의 가운데가 0% 기준선 · 문항 우측 숫자는 평균</small>
+              <small>보통이다 응답의 가운데가 0% 기준선 · 문항 우측 숫자는 평균</small>
             </div>
             <div className="likert-list">
               {cohortScales.map((question) => (
