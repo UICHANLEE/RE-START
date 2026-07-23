@@ -36,10 +36,14 @@ test("packages the Vercel-ready Korean survey and Neon storage", async () => {
   assert.match(exportRoute, /전체 응답/);
   assert.match(exportRoute, /text\/csv; charset=utf-8/);
   assert.match(reportRoute, /scaleQuestions/);
+  assert.match(reportRoute, /textQuestions/);
+  assert.match(reportRoute, /count >= 2/);
   assert.match(reportRoute, /Cache-Control.*no-store/s);
   assert.match(resultsPage, /Excel 파일 받기/);
   assert.match(reportPage, /응답 분석 리포트/);
   assert.match(reportPage, /최근 14일 참여 추이/);
+  assert.match(reportPage, /긍정·부정 응답 분포/);
+  assert.match(reportPage, /문항별 공통 키워드/);
   assert.match(env, /EXPORT_SECRET/);
 
   const manifest = JSON.parse(packageJson);

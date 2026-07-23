@@ -8,6 +8,40 @@ export const dynamic = "force-dynamic";
 
 type AnswerMap = Record<string, AnswerValue>;
 
+const TEXT_STOPWORDS = new Set([
+  "그리고",
+  "그러나",
+  "그래서",
+  "하지만",
+  "또한",
+  "대한",
+  "대해",
+  "위해",
+  "통해",
+  "관련",
+  "가장",
+  "정말",
+  "매우",
+  "조금",
+  "있는",
+  "없는",
+  "있다",
+  "없다",
+  "것이",
+  "것은",
+  "것을",
+  "필요",
+  "생각",
+  "합니다",
+  "됩니다",
+  "좋겠습니다",
+  "결과",
+  "확인용",
+  "무작위",
+  "테스트",
+  "응답",
+]);
+
 interface SurveyRow {
   cohort: Cohort;
   age_band: string;
@@ -110,6 +144,50 @@ function choiceSummary(question: SurveyQuestion, rows: SurveyRow[], cohort: Coho
   };
 }
 
+function normalizeToken(token: string) {
+  let normalized = token.toLocaleLowerCase("ko-KR");
+  if (/^[가-힣]+$/.test(normalized) && normalized.length >= 3) {
+    normalized = normalized.replace(
+      /(에서는|에게는|으로는|이라는|이라는|하고는|부터는|까지는|에서|에게|으로|라고|이라|하며|하고|보다|처럼|만큼|은|는|이|가|을|를|과|와|도|의|에|로)$/u,
+      "",
+    );
+  }
+  return normalized;
+}
+
+function textSummary(question: SurveyQuestion, rows: SurveyRow[], cohort: Cohort) {
+  const documents = rows
+    .map((row) => parseAnswers(row.answers_json)[question.id])
+    .filter((answer): answer is string => typeof answer === "string" && Boolean(answer.trim()));
+  const documentCounts = new Map<string, number>();
+
+  documents.forEach((answer) => {
+    const uniqueTokens = new Set(
+      (answer.match(/[가-힣]{2,}|[A-Za-z]{3,}/gu) ?? [])
+        .map(normalizeToken)
+        .filter((token) => token.length >= 2 && !TEXT_STOPWORDS.has(token)),
+    );
+    uniqueTokens.forEach((token) => {
+      documentCounts.set(token, (documentCounts.get(token) ?? 0) + 1);
+    });
+  });
+
+  const keywords = [...documentCounts.entries()]
+    .filter(([, count]) => count >= 2)
+    .map(([term, count]) => ({ term, count, percent: percentage(count, documents.length) }))
+    .sort((a, b) => b.count - a.count || a.term.localeCompare(b.term, "ko"))
+    .slice(0, 30);
+
+  return {
+    cohort,
+    id: question.id,
+    number: question.number,
+    prompt: question.prompt,
+    responses: documents.length,
+    keywords,
+  };
+}
+
 function koreanDateKey(value: Date | string) {
   const date = value instanceof Date ? value : new Date(value);
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -146,6 +224,7 @@ function buildInsights(
   rows: SurveyRow[],
   scaleQuestions: ReturnType<typeof scaleSummary>[],
   choiceQuestions: ReturnType<typeof choiceSummary>[],
+  textQuestions: ReturnType<typeof textSummary>[],
 ) {
   if (!rows.length) return ["아직 제출된 응답이 없습니다."];
   const insights: string[] = [];
@@ -165,6 +244,18 @@ function buildInsights(
     insights.push(
       `${cohort === "20s" ? "20대" : "30대"}의 가장 높은 동의 문항은 “${strongest.prompt}”(${strongest.average}점), 가장 낮은 문항은 “${weakest.prompt}”(${weakest.average}점)입니다.`,
     );
+  });
+
+  (["20s", "30s"] as const).forEach((cohort) => {
+    const text = textQuestions.find(
+      (question) => question.cohort === cohort && question.keywords.length,
+    );
+    const top = text?.keywords[0];
+    if (text && top) {
+      insights.push(
+        `${cohort === "20s" ? "20대" : "30대"} 서술형 답변에서는 “${top.term}” 키워드가 ${top.count}명에게 공통으로 나타났습니다.`,
+      );
+    }
   });
 
   (["20s", "30s"] as const).forEach((cohort) => {
@@ -231,6 +322,12 @@ export async function POST(request: Request) {
         .filter((question) => question.type === "single" || question.type === "multi")
         .map((question) => choiceSummary(question, cohortRows, cohort));
     });
+    const textQuestions = (["20s", "30s"] as const).flatMap((cohort) => {
+      const cohortRows = rows.filter((row) => row.cohort === cohort);
+      return SURVEYS[cohort].questions
+        .filter((question) => question.type === "text")
+        .map((question) => textSummary(question, cohortRows, cohort));
+    });
 
     return Response.json(
       {
@@ -249,7 +346,8 @@ export async function POST(request: Request) {
         daily: dailyTrend(rows),
         scaleQuestions,
         choiceQuestions,
-        insights: buildInsights(rows, scaleQuestions, choiceQuestions),
+        textQuestions,
+        insights: buildInsights(rows, scaleQuestions, choiceQuestions, textQuestions),
       },
       { headers: { "Cache-Control": "no-store" } },
     );

@@ -31,6 +31,15 @@ interface ChoiceQuestion {
   options: BreakdownItem[];
 }
 
+interface TextQuestion {
+  cohort: Cohort;
+  id: string;
+  number: number;
+  prompt: string;
+  responses: number;
+  keywords: Array<{ term: string; count: number; percent: number }>;
+}
+
 interface ReportData {
   generatedAt: string;
   lastSubmittedAt: string | null;
@@ -41,6 +50,7 @@ interface ReportData {
   daily: Array<{ date: string; label: string; count: number }>;
   scaleQuestions: ScaleQuestion[];
   choiceQuestions: ChoiceQuestion[];
+  textQuestions: TextQuestion[];
   insights: string[];
 }
 
@@ -99,6 +109,86 @@ function TrendChart({ data }: { data: ReportData["daily"] }) {
   );
 }
 
+function LikertChart({ question }: { question: ScaleQuestion }) {
+  const count = (values: number[]) =>
+    question.distribution
+      .filter((item) => values.includes(item.value))
+      .reduce((sum, item) => sum + item.count, 0);
+  const negative = question.responses ? (count([1, 2]) / question.responses) * 100 : 0;
+  const neutral = question.responses ? (count([3]) / question.responses) * 100 : 0;
+  const positive = question.responses ? (count([4, 5]) / question.responses) * 100 : 0;
+
+  return (
+    <div className="likert-row">
+      <div className="likert-question">
+        <b>Q{question.number}</b>
+        <span>{question.prompt}</span>
+        <strong>{question.average.toFixed(2)}</strong>
+      </div>
+      <div className="likert-values">
+        <span>부정 {negative.toFixed(0)}%</span>
+        <span>중립 {neutral.toFixed(0)}%</span>
+        <span>긍정 {positive.toFixed(0)}%</span>
+      </div>
+      <div className="likert-diverging" aria-label={`부정 ${negative.toFixed(0)}%, 중립 ${neutral.toFixed(0)}%, 긍정 ${positive.toFixed(0)}%`}>
+        <div className="likert-negative"><span style={{ width: `${negative}%` }} /></div>
+        <i title={`중립 ${neutral.toFixed(0)}%`} />
+        <div className="likert-positive"><span style={{ width: `${positive}%` }} /></div>
+      </div>
+    </div>
+  );
+}
+
+function WordCloud({ question }: { question: TextQuestion }) {
+  const max = Math.max(1, ...question.keywords.map((keyword) => keyword.count));
+  const min = Math.min(max, ...question.keywords.map((keyword) => keyword.count));
+  const size = (count: number) => {
+    const ratio = max === min ? 0.58 : (count - min) / (max - min);
+    return `${1 + ratio * 1.5}rem`;
+  };
+
+  return (
+    <article className="report-panel wordcloud-panel">
+      <div className="wordcloud-heading">
+        <div>
+          <span>Q{question.number} · 서술형 {question.responses}건</span>
+          <h3>{question.prompt}</h3>
+        </div>
+        <small>2명 이상 공통 사용어</small>
+      </div>
+      {question.keywords.length ? (
+        <>
+          <div className="wordcloud" aria-label="서술형 답변 워드클라우드">
+            {question.keywords.map((keyword, index) => (
+              <span
+                className={`word-tone-${index % 5}`}
+                key={keyword.term}
+                style={{ fontSize: size(keyword.count) }}
+                title={`${keyword.term}: ${keyword.count}명 (${keyword.percent}%)`}
+              >
+                {keyword.term}
+              </span>
+            ))}
+          </div>
+          <div className="keyword-ranking">
+            {question.keywords.slice(0, 8).map((keyword, index) => (
+              <div key={keyword.term}>
+                <b>{index + 1}</b>
+                <span>{keyword.term}</span>
+                <strong>{keyword.count}명 · {keyword.percent}%</strong>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="wordcloud-empty">
+          공통 키워드를 만들 수 있는 유효 응답이 아직 없습니다.
+        </div>
+      )}
+    </article>
+  );
+}
+
 function formatDate(value: string | null) {
   if (!value) return "응답 없음";
   return new Intl.DateTimeFormat("ko-KR", {
@@ -121,6 +211,10 @@ export default function ReportPage() {
   );
   const cohortChoices = useMemo(
     () => report?.choiceQuestions.filter((question) => question.cohort === cohort) ?? [],
+    [report, cohort],
+  );
+  const cohortTexts = useMemo(
+    () => report?.textQuestions.filter((question) => question.cohort === cohort) ?? [],
     [report, cohort],
   );
 
@@ -267,15 +361,12 @@ export default function ReportPage() {
 
           <article className="report-panel scale-panel">
             <div className="report-panel-heading">
-              <div><span>5점 척도</span><h2>문항별 평균</h2></div>
-              <small>1 전혀 그렇지 않다 · 5 매우 그렇다</small>
+              <div><span>5점 척도</span><h2>긍정·부정 응답 분포</h2></div>
+              <small>부정 1·2점 · 중립 3점 · 긍정 4·5점 · 우측 숫자는 평균</small>
             </div>
-            <div className="scale-report-list">
+            <div className="likert-list">
               {cohortScales.map((question) => (
-                <div className="scale-report-row" key={`${question.cohort}-${question.id}`}>
-                  <div><b>Q{question.number}</b><span>{question.prompt}</span><strong>{question.average.toFixed(2)}</strong></div>
-                  <div className="scale-report-track"><span style={{ width: `${(question.average / 5) * 100}%` }} /></div>
-                </div>
+                <LikertChart question={question} key={`${question.cohort}-${question.id}`} />
               ))}
             </div>
           </article>
@@ -291,6 +382,19 @@ export default function ReportPage() {
               </article>
             ))}
           </div>
+
+          <section className="report-text-analysis">
+            <div className="report-section-title">
+              <span>서술형 분석</span>
+              <h2>문항별 공통 키워드</h2>
+              <p>원문은 표시하지 않으며, 개인 표현 노출을 줄이기 위해 2명 이상이 함께 사용한 단어만 집계합니다.</p>
+            </div>
+            <div className="wordcloud-grid">
+              {cohortTexts.map((question) => (
+                <WordCloud question={question} key={`${question.cohort}-${question.id}`} />
+              ))}
+            </div>
+          </section>
         </section>
 
         <footer className="report-footer">
