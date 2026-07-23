@@ -1,5 +1,4 @@
-import { getDb, ensureSurveySchema } from "@/db";
-import { surveyResponses } from "@/db/schema";
+import { ensureSurveySchema, getSql } from "@/db";
 import {
   AGE_OPTIONS,
   GENDER_OPTIONS,
@@ -13,6 +12,8 @@ import {
 
 const MAX_REQUEST_BYTES = 40_000;
 const SUBMISSION_ID_PATTERN = /^[a-zA-Z0-9-]{16,80}$/;
+
+export const runtime = "nodejs";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -133,18 +134,25 @@ export async function POST(request: Request) {
 
   try {
     await ensureSurveySchema();
-    const database = getDb();
-    await database
-      .insert(surveyResponses)
-      .values({
-        id: submissionId,
-        surveyVersion,
+    const sql = getSql();
+    await sql`
+      INSERT INTO survey_responses (
+        id,
+        survey_version,
         cohort,
-        ageBand,
-        gender: storedGender,
-        answersJson: JSON.stringify(normalizedAnswers),
-      })
-      .onConflictDoNothing();
+        age_band,
+        gender,
+        answers_json
+      ) VALUES (
+        ${submissionId},
+        ${surveyVersion},
+        ${cohort},
+        ${ageBand},
+        ${storedGender},
+        ${JSON.stringify(normalizedAnswers)}::jsonb
+      )
+      ON CONFLICT (id) DO NOTHING
+    `;
 
     return Response.json({ id: submissionId }, { status: 201 });
   } catch (error) {
