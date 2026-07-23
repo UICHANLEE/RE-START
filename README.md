@@ -8,7 +8,9 @@
 2. **Framework Preset**은 `Next.js`를 선택합니다.
 3. Vercel Marketplace에서 **Neon**을 설치하고 프로젝트에 연결합니다.
 4. Neon이 생성한 `DATABASE_URL` 환경변수가 연결되었는지 확인합니다.
-5. Deploy를 실행합니다.
+5. Vercel 프로젝트의 Environment Variables에 긴 관리자 비밀번호를
+   `EXPORT_SECRET`으로 추가합니다.
+6. Deploy를 실행합니다.
 
 별도의 Build/Output 설정은 필요하지 않습니다. Vercel이 다음 설정을 자동으로 사용합니다.
 
@@ -17,6 +19,19 @@
 - Node.js: 22.x
 
 Neon 연결 후 첫 응답이 제출될 때 `survey_responses` 테이블과 조회용 인덱스가 자동 생성됩니다. 직접 생성하려면 [`db/schema.sql`](db/schema.sql)을 Neon SQL Editor에서 실행할 수 있습니다.
+
+## 전체 결과 내려받기
+
+배포 주소 뒤에 `/results`를 붙여 관리자 결과 페이지를 엽니다.
+
+```text
+https://your-project.vercel.app/results
+```
+
+Vercel에 설정한 `EXPORT_SECRET`을 입력하면 전체 설문 결과를 CSV 또는 Excel
+형태로 내려받을 수 있습니다. Excel 파일에는 `전체 응답`, `20대`, `30대` 시트가
+포함됩니다. 비밀번호는 URL이나 브라우저 저장소에 남기지 않으며 결과 조회 API는
+캐시하지 않습니다.
 
 ## 로컬 실행
 

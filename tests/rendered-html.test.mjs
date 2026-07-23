@@ -5,12 +5,15 @@ import test from "node:test";
 const projectRoot = new URL("../", import.meta.url);
 
 test("packages the Vercel-ready Korean survey and Neon storage", async () => {
-  const [layout, form, survey, database, schema, packageJson] = await Promise.all([
+  const [layout, form, survey, database, schema, exportRoute, resultsPage, env, packageJson] = await Promise.all([
     readFile(new URL("app/layout.tsx", projectRoot), "utf8"),
     readFile(new URL("app/SurveyForm.tsx", projectRoot), "utf8"),
     readFile(new URL("lib/survey.ts", projectRoot), "utf8"),
     readFile(new URL("db/index.ts", projectRoot), "utf8"),
     readFile(new URL("db/schema.sql", projectRoot), "utf8"),
+    readFile(new URL("app/api/admin/export/route.ts", projectRoot), "utf8"),
+    readFile(new URL("app/results/page.tsx", projectRoot), "utf8"),
+    readFile(new URL(".env.example", projectRoot), "utf8"),
     readFile(new URL("package.json", projectRoot), "utf8"),
   ]);
 
@@ -27,11 +30,17 @@ test("packages the Vercel-ready Korean survey and Neon storage", async () => {
   assert.match(database, /@neondatabase\/serverless/);
   assert.match(database, /process\.env\.DATABASE_URL/);
   assert.match(schema, /CREATE TABLE IF NOT EXISTS survey_responses/);
+  assert.match(exportRoute, /timingSafeEqual/);
+  assert.match(exportRoute, /전체 응답/);
+  assert.match(exportRoute, /text\/csv; charset=utf-8/);
+  assert.match(resultsPage, /Excel 파일 받기/);
+  assert.match(env, /EXPORT_SECRET/);
 
   const manifest = JSON.parse(packageJson);
   assert.equal(manifest.scripts.build, "next build");
   assert.equal(manifest.scripts.dev, "next dev");
   assert.ok(manifest.dependencies["@neondatabase/serverless"]);
+  assert.ok(manifest.dependencies.exceljs);
   assert.equal(manifest.dependencies["drizzle-orm"], undefined);
   assert.equal(manifest.devDependencies.vinext, undefined);
   await access(new URL(".next/BUILD_ID", projectRoot));
