@@ -5,14 +5,16 @@ import test from "node:test";
 const projectRoot = new URL("../", import.meta.url);
 
 test("packages the Vercel-ready Korean survey and Neon storage", async () => {
-  const [layout, form, survey, database, schema, exportRoute, resultsPage, env, packageJson] = await Promise.all([
+  const [layout, form, survey, database, schema, exportRoute, reportRoute, resultsPage, reportPage, env, packageJson] = await Promise.all([
     readFile(new URL("app/layout.tsx", projectRoot), "utf8"),
     readFile(new URL("app/SurveyForm.tsx", projectRoot), "utf8"),
     readFile(new URL("lib/survey.ts", projectRoot), "utf8"),
     readFile(new URL("db/index.ts", projectRoot), "utf8"),
     readFile(new URL("db/schema.sql", projectRoot), "utf8"),
     readFile(new URL("app/api/admin/export/route.ts", projectRoot), "utf8"),
+    readFile(new URL("app/api/admin/report/route.ts", projectRoot), "utf8"),
     readFile(new URL("app/results/page.tsx", projectRoot), "utf8"),
+    readFile(new URL("app/report/page.tsx", projectRoot), "utf8"),
     readFile(new URL(".env.example", projectRoot), "utf8"),
     readFile(new URL("package.json", projectRoot), "utf8"),
   ]);
@@ -33,7 +35,11 @@ test("packages the Vercel-ready Korean survey and Neon storage", async () => {
   assert.match(exportRoute, /timingSafeEqual/);
   assert.match(exportRoute, /전체 응답/);
   assert.match(exportRoute, /text\/csv; charset=utf-8/);
+  assert.match(reportRoute, /scaleQuestions/);
+  assert.match(reportRoute, /Cache-Control.*no-store/s);
   assert.match(resultsPage, /Excel 파일 받기/);
+  assert.match(reportPage, /응답 분석 리포트/);
+  assert.match(reportPage, /최근 14일 참여 추이/);
   assert.match(env, /EXPORT_SECRET/);
 
   const manifest = JSON.parse(packageJson);

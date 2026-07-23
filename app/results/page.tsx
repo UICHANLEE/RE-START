@@ -95,7 +95,10 @@ export default function ResultsPage() {
           비밀번호는 브라우저에 저장되지 않습니다. 내려받은 파일에는 익명 설문 원본
           응답이 포함되므로 안전하게 관리해 주세요.
         </p>
-        <Link className="results-back" href="/">← 설문으로 돌아가기</Link>
+        <div className="results-footer-links">
+          <Link className="results-back" href="/report">분석 리포트 보기 →</Link>
+          <Link className="results-back" href="/">← 설문으로 돌아가기</Link>
+        </div>
       </section>
     </main>
   );
