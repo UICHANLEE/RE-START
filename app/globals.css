@@ -2100,18 +2100,19 @@ textarea:focus-visible,
 .likert-diverging {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3px;
-  height: 13px;
+  gap: 0;
+  height: 18px;
+  border-radius: 99px;
+  background: #f0f2f4;
 }
 
 .likert-diverging::after {
   position: absolute;
-  top: -3px;
-  bottom: -3px;
+  top: -4px;
+  bottom: -4px;
   left: 50%;
   width: 1px;
-  background: rgba(23, 54, 93, 0.35);
+  background: rgba(54, 64, 77, 0.5);
   content: "";
 }
 
@@ -2120,7 +2121,7 @@ textarea:focus-visible,
   overflow: hidden;
   display: flex;
   border-radius: 99px 3px 3px 99px;
-  background: #e9eef2;
+  background: #f0f2f4;
 }
 
 .likert-negative {
@@ -2137,68 +2138,60 @@ textarea:focus-visible,
   display: block;
   flex: 0 0 auto;
   height: 100%;
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.75);
 }
 
 .likert-very-negative,
 .legend-very-negative {
-  background: #9f2636;
+  background: #d7a0a8;
 }
 
 .likert-some-negative,
 .legend-some-negative {
-  background: #ee9aab;
+  background: #f0cbd2;
 }
 
 .likert-some-positive,
 .legend-some-positive {
-  background: #82c7e9;
+  background: #c7deed;
 }
 
 .likert-very-positive,
 .legend-very-positive {
-  background: #234f91;
+  background: #98b5d8;
 }
 
-.likert-diverging i {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  left: 50%;
-  width: 7px;
-  height: 7px;
-  border: 1px solid #fff;
-  border-radius: 50%;
-  background: var(--gold);
-  box-shadow: 0 0 0 2px rgba(214, 168, 75, 0.22);
-  transform: translate(-50%, -50%);
+.likert-neutral,
+.legend-neutral {
+  background: #d8dce1;
+}
+
+.likert-neutral {
+  min-width: 2px;
+  border-inline: 1px solid rgba(255, 255, 255, 0.86);
 }
 
 .likert-legend {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   align-items: center;
-  justify-content: flex-end;
-  gap: 8px 14px;
+  gap: 3px;
+  width: 100%;
   margin: -8px 0 24px;
-  color: var(--muted);
-  font-size: 0.64rem;
+  color: #344354;
+  font-size: 0.62rem;
   font-weight: 800;
 }
 
 .likert-legend span {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-}
-
-.likert-legend i {
-  width: 9px;
-  height: 9px;
-  border-radius: 2px;
-}
-
-.legend-neutral {
-  border-radius: 50% !important;
-  background: var(--gold);
+  justify-content: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid rgba(50, 65, 82, 0.08);
+  border-radius: 7px;
+  text-align: center;
 }
 
 .choice-report-grid {
@@ -2464,8 +2457,6 @@ textarea:focus-visible,
   }
 
   .likert-legend {
-    justify-content: flex-start;
-    flex-wrap: wrap;
     margin-top: -4px;
   }
 

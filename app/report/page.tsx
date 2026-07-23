@@ -135,31 +135,34 @@ function LikertChart({ question }: { question: ScaleQuestion }) {
       </div>
       <div
         className="likert-diverging"
-        aria-label={`매우 부정 ${veryNegative.toFixed(0)}%, 부정 ${negative.toFixed(0)}%, 보통 ${neutral.toFixed(0)}%, 긍정 ${positive.toFixed(0)}%, 매우 긍정 ${veryPositive.toFixed(0)}%`}
+        style={{ gridTemplateColumns: `1fr ${Math.max(neutral, 2)}% 1fr` }}
+        aria-label={`매우 불만족 ${veryNegative.toFixed(0)}%, 조금 불만족 ${negative.toFixed(0)}%, 보통 ${neutral.toFixed(0)}%, 조금 만족 ${positive.toFixed(0)}%, 매우 만족 ${veryPositive.toFixed(0)}%`}
       >
         <div className="likert-negative">
           <span
             className="likert-very-negative"
             style={{ width: `${(veryNegative / sideMax) * 100}%` }}
-            title={`1점 매우 부정 ${veryNegative.toFixed(0)}%`}
+            title={`1점 매우 불만족 ${veryNegative.toFixed(0)}%`}
           />
           <span
             className="likert-some-negative"
             style={{ width: `${(negative / sideMax) * 100}%` }}
-            title={`2점 부정 ${negative.toFixed(0)}%`}
+            title={`2점 조금 불만족 ${negative.toFixed(0)}%`}
           />
         </div>
-        <i title={`중립 ${neutral.toFixed(0)}%`} />
+        <div className="likert-neutral" title={`3점 보통 ${neutral.toFixed(0)}%`}>
+          <span className="sr-only">보통 {neutral.toFixed(0)}%</span>
+        </div>
         <div className="likert-positive">
           <span
             className="likert-some-positive"
             style={{ width: `${(positive / sideMax) * 100}%` }}
-            title={`4점 긍정 ${positive.toFixed(0)}%`}
+            title={`4점 조금 만족 ${positive.toFixed(0)}%`}
           />
           <span
             className="likert-very-positive"
             style={{ width: `${(veryPositive / sideMax) * 100}%` }}
-            title={`5점 매우 긍정 ${veryPositive.toFixed(0)}%`}
+            title={`5점 매우 만족 ${veryPositive.toFixed(0)}%`}
           />
         </div>
       </div>
@@ -393,11 +396,11 @@ export default function ReportPage() {
               <small>부정 1·2점 · 중립 3점 · 긍정 4·5점 · 우측 숫자는 평균</small>
             </div>
             <div className="likert-legend" aria-label="5점 척도 색상 범례">
-              <span><i className="legend-very-negative" />1 매우 부정</span>
-              <span><i className="legend-some-negative" />2 부정</span>
-              <span><i className="legend-neutral" />3 보통</span>
-              <span><i className="legend-some-positive" />4 긍정</span>
-              <span><i className="legend-very-positive" />5 매우 긍정</span>
+              <span className="legend-very-negative">매우 불만족</span>
+              <span className="legend-some-negative">조금 불만족</span>
+              <span className="legend-neutral">보통</span>
+              <span className="legend-some-positive">조금 만족</span>
+              <span className="legend-very-positive">매우 만족</span>
             </div>
             <div className="likert-list">
               {cohortScales.map((question) => (
