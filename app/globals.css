@@ -2135,15 +2135,28 @@ textarea:focus-visible,
 .likert-negative span,
 .likert-positive span {
   display: block;
+  flex: 0 0 auto;
   height: 100%;
 }
 
-.likert-negative span {
-  background: linear-gradient(90deg, #d69b80, var(--terracotta));
+.likert-very-negative,
+.legend-very-negative {
+  background: #9f2636;
 }
 
-.likert-positive span {
-  background: linear-gradient(90deg, var(--blue), #6f93cb);
+.likert-some-negative,
+.legend-some-negative {
+  background: #ee9aab;
+}
+
+.likert-some-positive,
+.legend-some-positive {
+  background: #82c7e9;
+}
+
+.likert-very-positive,
+.legend-very-positive {
+  background: #234f91;
 }
 
 .likert-diverging i {
@@ -2158,6 +2171,34 @@ textarea:focus-visible,
   background: var(--gold);
   box-shadow: 0 0 0 2px rgba(214, 168, 75, 0.22);
   transform: translate(-50%, -50%);
+}
+
+.likert-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 14px;
+  margin: -8px 0 24px;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+
+.likert-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.likert-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.legend-neutral {
+  border-radius: 50% !important;
+  background: var(--gold);
 }
 
 .choice-report-grid {
@@ -2420,6 +2461,12 @@ textarea:focus-visible,
 
   .report-panel-heading {
     flex-direction: column;
+  }
+
+  .likert-legend {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin-top: -4px;
   }
 
   .choice-panel {

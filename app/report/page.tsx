@@ -110,13 +110,16 @@ function TrendChart({ data }: { data: ReportData["daily"] }) {
 }
 
 function LikertChart({ question }: { question: ScaleQuestion }) {
-  const count = (values: number[]) =>
-    question.distribution
-      .filter((item) => values.includes(item.value))
-      .reduce((sum, item) => sum + item.count, 0);
-  const negative = question.responses ? (count([1, 2]) / question.responses) * 100 : 0;
-  const neutral = question.responses ? (count([3]) / question.responses) * 100 : 0;
-  const positive = question.responses ? (count([4, 5]) / question.responses) * 100 : 0;
+  const percent = (value: number) =>
+    question.distribution.find((item) => item.value === value)?.percent ?? 0;
+  const veryNegative = percent(1);
+  const negative = percent(2);
+  const neutral = percent(3);
+  const positive = percent(4);
+  const veryPositive = percent(5);
+  const negativeTotal = veryNegative + negative;
+  const positiveTotal = positive + veryPositive;
+  const sideMax = Math.max(negativeTotal, positiveTotal, 1);
 
   return (
     <div className="likert-row">
@@ -126,14 +129,39 @@ function LikertChart({ question }: { question: ScaleQuestion }) {
         <strong>{question.average.toFixed(2)}</strong>
       </div>
       <div className="likert-values">
-        <span>부정 {negative.toFixed(0)}%</span>
+        <span>부정 {negativeTotal.toFixed(0)}%</span>
         <span>중립 {neutral.toFixed(0)}%</span>
-        <span>긍정 {positive.toFixed(0)}%</span>
+        <span>긍정 {positiveTotal.toFixed(0)}%</span>
       </div>
-      <div className="likert-diverging" aria-label={`부정 ${negative.toFixed(0)}%, 중립 ${neutral.toFixed(0)}%, 긍정 ${positive.toFixed(0)}%`}>
-        <div className="likert-negative"><span style={{ width: `${negative}%` }} /></div>
+      <div
+        className="likert-diverging"
+        aria-label={`매우 부정 ${veryNegative.toFixed(0)}%, 부정 ${negative.toFixed(0)}%, 보통 ${neutral.toFixed(0)}%, 긍정 ${positive.toFixed(0)}%, 매우 긍정 ${veryPositive.toFixed(0)}%`}
+      >
+        <div className="likert-negative">
+          <span
+            className="likert-very-negative"
+            style={{ width: `${(veryNegative / sideMax) * 100}%` }}
+            title={`1점 매우 부정 ${veryNegative.toFixed(0)}%`}
+          />
+          <span
+            className="likert-some-negative"
+            style={{ width: `${(negative / sideMax) * 100}%` }}
+            title={`2점 부정 ${negative.toFixed(0)}%`}
+          />
+        </div>
         <i title={`중립 ${neutral.toFixed(0)}%`} />
-        <div className="likert-positive"><span style={{ width: `${positive}%` }} /></div>
+        <div className="likert-positive">
+          <span
+            className="likert-some-positive"
+            style={{ width: `${(positive / sideMax) * 100}%` }}
+            title={`4점 긍정 ${positive.toFixed(0)}%`}
+          />
+          <span
+            className="likert-very-positive"
+            style={{ width: `${(veryPositive / sideMax) * 100}%` }}
+            title={`5점 매우 긍정 ${veryPositive.toFixed(0)}%`}
+          />
+        </div>
       </div>
     </div>
   );
@@ -363,6 +391,13 @@ export default function ReportPage() {
             <div className="report-panel-heading">
               <div><span>5점 척도</span><h2>긍정·부정 응답 분포</h2></div>
               <small>부정 1·2점 · 중립 3점 · 긍정 4·5점 · 우측 숫자는 평균</small>
+            </div>
+            <div className="likert-legend" aria-label="5점 척도 색상 범례">
+              <span><i className="legend-very-negative" />1 매우 부정</span>
+              <span><i className="legend-some-negative" />2 부정</span>
+              <span><i className="legend-neutral" />3 보통</span>
+              <span><i className="legend-some-positive" />4 긍정</span>
+              <span><i className="legend-very-positive" />5 매우 긍정</span>
             </div>
             <div className="likert-list">
               {cohortScales.map((question) => (
