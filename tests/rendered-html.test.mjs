@@ -47,6 +47,8 @@ test("packages the Vercel-ready Korean survey and Neon storage", async () => {
   assert.match(reportPage, /조금 불만족/);
   assert.match(reportPage, /조금 만족/);
   assert.match(reportPage, /매우 만족/);
+  assert.match(reportPage, /likert-plot/);
+  assert.match(reportPage, /0% 기준선/);
   assert.match(reportPage, /문항별 공통 키워드/);
   assert.match(env, /EXPORT_SECRET/);
 
